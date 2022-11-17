@@ -17,9 +17,5 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="User.WebApi.DataAccess\Repositories\" />
-  </ItemGroup>
-
 
 </Project>
