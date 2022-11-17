@@ -2,7 +2,7 @@
 
 namespace User.WebApi.User.WebApi.Entities
 {
-    public class User
+    public class Account
     {
         public Guid Id { get; set; }
 
