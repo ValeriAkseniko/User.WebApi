@@ -9,5 +9,11 @@ namespace User.WebApi.User.WebApi.DataAccess.Interface.Repositories
         Task CreateAsync(Account account);
 
         Task<bool> EmailExistAsync(string login);
+
+        Task<Account> GetAsync(Guid accountId);
+
+        Task UpdateAsync(Account account);
+
+        Task DeleteAsync(Guid accountId);
     }
 }

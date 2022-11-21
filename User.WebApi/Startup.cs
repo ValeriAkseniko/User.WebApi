@@ -1,14 +1,17 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using User.WebApi.User.WebApi.BusinessLogicInterface;
 using User.WebApi.User.WebApi.BusinessLogicServices;
 using User.WebApi.User.WebApi.DataAccess;
 using User.WebApi.User.WebApi.DataAccess.Interface.Repositories;
 using User.WebApi.User.WebApi.DataAccess.Repositories;
+using User.WebApi.User.WebApi.Entities;
 
 namespace User.WebApi
 {
@@ -30,6 +33,24 @@ namespace User.WebApi
             services.AddScoped<IAccountRepository, AccountRepository>();
 
             services.AddScoped<IAccountService, AccountService>();
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddJwtBearer(options =>
+                    {
+                        options.RequireHttpsMetadata = false;
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true,
+                            ValidIssuer = AuthOptions.ISSUER,
+
+                            ValidateAudience = true,
+                            ValidAudience = AuthOptions.AUDIENCE,
+                            ValidateLifetime = true,
+
+                            IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+                            ValidateIssuerSigningKey = true,
+                        };
+                    });
 
 
             services.AddControllers();
