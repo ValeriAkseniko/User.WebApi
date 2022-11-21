@@ -63,11 +63,24 @@ namespace User.WebApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            app.UseDeveloperExceptionPage();
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+            });
+
+            app.UseHttpsRedirection();
+
+            app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {

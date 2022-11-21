@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using User.WebApi.User.WebApi.BusinessLogicInterface;
@@ -49,8 +50,9 @@ namespace User.WebApi.User.WebApi.BusinessLogicServices
             await accountRepository.UpdateAsync(account);
         }
 
-        public async Task<AccountView> GetAsync(Guid accountId)
+        public async Task<AccountView> GetAsync()
         {
+            var accountId = new Guid(httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
             var entity = await accountRepository.GetAsync(accountId);
             var result = new AccountView()
             {
@@ -64,8 +66,26 @@ namespace User.WebApi.User.WebApi.BusinessLogicServices
 
         public async Task DeleteAsync()
         {
-            var userId = new Guid(httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
-            await accountRepository.DeleteAsync(userId);
+            var accountId = new Guid(httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            await accountRepository.DeleteAsync(accountId);
+        }
+
+        public async Task<ClaimsIdentity> GetIdentity(string email)
+        {
+            var accounts = await accountRepository.GetListAsync();
+            var account = accounts.Find(x => x.Email.ToLower() == email.ToLower());
+            if (account != null)
+            {
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, account.Email)
+                };
+                ClaimsIdentity claimsIdentity =
+                new ClaimsIdentity(claims.ToString(), "Token", ClaimsIdentity.DefaultNameClaimType);
+                return claimsIdentity;
+            }
+
+            return null;
         }
     }
 }

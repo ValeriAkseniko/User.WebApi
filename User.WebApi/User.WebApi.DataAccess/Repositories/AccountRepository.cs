@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using User.WebApi.User.WebApi.DataAccess.Interface.Repositories;
 using User.WebApi.User.WebApi.Entities;
@@ -52,6 +53,11 @@ namespace User.WebApi.User.WebApi.DataAccess.Repositories
             userWebApiContext.Entry(entity).State = EntityState.Deleted;
             userWebApiContext.Remove(entity);
             await userWebApiContext.SaveChangesAsync();
+        }
+
+        public async Task<List<Account>> GetListAsync()
+        {
+            return await userWebApiContext.Accounts.ToListAsync();
         }
     }
 }

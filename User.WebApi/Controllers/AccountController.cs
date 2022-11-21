@@ -1,6 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using User.WebApi.User.WebApi.BusinessLogicServices;
 using User.WebApi.User.WebApi.DataTransferObjects.Account;
@@ -36,9 +39,9 @@ namespace User.WebApi.Controllers
         [HttpGet]
         [Route("Get")]
         [Authorize]
-        public async Task<AccountView> Get([FromBody] Guid accountId)
+        public async Task<AccountView> Get()
         {
-            return await accountService.GetAsync(accountId);
+            return await accountService.GetAsync();
         }
 
         [HttpDelete]
@@ -48,5 +51,35 @@ namespace User.WebApi.Controllers
         {
             await accountService.DeleteAsync();
         }
+
+        [HttpPost("/token")]
+        public async Task<IActionResult> Token(string email)
+        {
+            ClaimsIdentity identity = await accountService.GetIdentity(email);
+            if (identity == null)
+            {
+                return BadRequest();
+            }
+
+            var now = DateTime.UtcNow;
+            var jwt = new JwtSecurityToken(
+                    issuer: AuthOptions.ISSUER,
+                    audience: AuthOptions.AUDIENCE,
+                    notBefore: now,
+                    claims: identity.Claims,
+                    expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
+                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+            var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+
+            var response = new
+            {
+                access_token = encodedJwt,
+                username = identity.ToString()
+            };
+
+            return Json(response);
+        }
+
+        
     }
 }
