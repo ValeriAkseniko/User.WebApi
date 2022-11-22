@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using User.WebApi.User.WebApi.DataTransferObjects.Account;
+using User.WebApi.User.WebApi.Entities;
 
 namespace User.WebApi.User.WebApi.BusinessLogicInterface
 {
@@ -15,6 +15,8 @@ namespace User.WebApi.User.WebApi.BusinessLogicInterface
 
         Task DeleteAsync();
 
-        Task<ClaimsIdentity> GetIdentity(string email);
+        Task<Account> GetByIdAsync(Guid id);
+
+        Task<AuthenticateResponse> AuthenticateAsync(AuthenticateRequest model);
     }
 }

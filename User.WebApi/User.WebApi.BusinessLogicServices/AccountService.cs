@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
-using System.Net.Http;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using User.WebApi.User.WebApi.BusinessLogicInterface;
 using User.WebApi.User.WebApi.DataAccess.Interface.Repositories;
@@ -16,11 +19,13 @@ namespace User.WebApi.User.WebApi.BusinessLogicServices
     {
         private readonly IAccountRepository accountRepository;
         private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly AppSettings appSettings;
 
-        public AccountService(IAccountRepository accountRepository, IHttpContextAccessor httpContextAccessor)
+        public AccountService(IAccountRepository accountRepository, IHttpContextAccessor httpContextAccessor, IOptions<AppSettings> appSettings)
         {
             this.accountRepository = accountRepository;
             this.httpContextAccessor = httpContextAccessor;
+            this.appSettings = appSettings.Value;
         }
         public async Task CreateAccountAsync(AccountCreateRequest accountCreateRequest)
         {
@@ -42,7 +47,6 @@ namespace User.WebApi.User.WebApi.BusinessLogicServices
         public async Task UpdateAccountAsync(AccountUpdateRequest accountUpdateRequest)
         {
             var user = httpContextAccessor.HttpContext.User.Identity.Name;
-            //var userId = new Guid(httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
             var entity = await accountRepository.GetAsync(user);
             entity.Name = accountUpdateRequest.Name;
             entity.Surname = accountUpdateRequest.Surname;
@@ -54,7 +58,6 @@ namespace User.WebApi.User.WebApi.BusinessLogicServices
         public async Task<AccountView> GetAsync()
         {
             var user = httpContextAccessor.HttpContext.User.Identity.Name;
-            //var userId = new Guid(httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
             var entity = await accountRepository.GetAsync(user);
             var result = new AccountView()
             {
@@ -72,22 +75,49 @@ namespace User.WebApi.User.WebApi.BusinessLogicServices
             await accountRepository.DeleteAsync(accountId);
         }
 
-        public async Task<ClaimsIdentity> GetIdentity(string email)
+        private string generateJwtToken(Account account)
         {
-            var accounts = await accountRepository.GetListAsync();
-            var account = accounts.Find(x => x.Email.ToLower() == email.ToLower());
-            if (account != null)
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                var claims = new List<Claim>
-                {
-                    new Claim(ClaimsIdentity.DefaultNameClaimType, account.Email)
-                };
-                ClaimsIdentity claimsIdentity =
-                new ClaimsIdentity(claims.ToString(), "Token", ClaimsIdentity.DefaultNameClaimType);
-                return claimsIdentity;
-            }
+                Subject = new ClaimsIdentity(new[] { new Claim("id", account.Id.ToString()) }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
 
-            return null;
+        public async Task<AuthenticateResponse> AuthenticateAsync(AuthenticateRequest model)
+        {
+            var users = await accountRepository.GetListAsync();
+            var user = users.FirstOrDefault(x => x.Email == model.Email);
+
+            if (user == null) return null;
+
+            var token = GenerateJwtToken(user);
+
+            return new AuthenticateResponse(user, token);
+        }
+
+        public async Task<Account> GetByIdAsync(Guid id)
+        {
+            return await accountRepository.GetByIdAsync(id);
+        }
+
+        private string GenerateJwtToken(Account account)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[] { new Claim("id", account.Id.ToString()) }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

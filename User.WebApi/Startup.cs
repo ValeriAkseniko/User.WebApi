@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using User.WebApi.Helpers;
 using User.WebApi.User.WebApi.BusinessLogicInterface;
 using User.WebApi.User.WebApi.BusinessLogicServices;
 using User.WebApi.User.WebApi.DataAccess;
@@ -29,6 +30,8 @@ namespace User.WebApi
 
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<UserWebApiContext>(options => options.UseSqlServer(connection));
+
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             services.AddScoped<IAccountRepository, AccountRepository>();
 
@@ -65,13 +68,9 @@ namespace User.WebApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseDefaultFiles();
-            app.UseStaticFiles();
-
             app.UseRouting();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+            app.UseMiddleware<JwtMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {

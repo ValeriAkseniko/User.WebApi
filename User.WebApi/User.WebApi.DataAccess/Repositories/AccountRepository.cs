@@ -66,5 +66,10 @@ namespace User.WebApi.User.WebApi.DataAccess.Repositories
         {
             return await userWebApiContext.Accounts.ToListAsync();
         }
+
+        public async Task<Account> GetByIdAsync(Guid id)
+        {
+            return await userWebApiContext.Accounts.FirstOrDefaultAsync(x => x.Id == id);
+        }
     }
 }

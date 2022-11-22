@@ -1,9 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using User.WebApi.User.WebApi.BusinessLogicInterface;
 using User.WebApi.User.WebApi.DataTransferObjects.Account;
@@ -52,32 +48,16 @@ namespace User.WebApi.Controllers
             await accountService.DeleteAsync();
         }
 
-        [HttpPost("/token")]
-        public async Task<IActionResult> Token(string email)
+        [HttpPost]
+        [Route("Authenticate")]
+        public async Task<IActionResult> Authenticate(AuthenticateRequest model)
         {
-            ClaimsIdentity identity = await accountService.GetIdentity(email);
-            if (identity == null)
-            {
-                return BadRequest();
-            }
+            var response = await accountService.AuthenticateAsync(model);
 
-            var now = DateTime.UtcNow;
-            var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.ISSUER,
-                    audience: AuthOptions.AUDIENCE,
-                    notBefore: now,
-                    claims: identity.Claims,
-                    expires: now.Add(TimeSpan.FromMinutes(AuthOptions.LIFETIME)),
-                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
-            var encodedJwt = new JwtSecurityTokenHandler().WriteToken(jwt);
+            if (response == null)
+                return BadRequest(new { message = "Username or password is incorrect" });
 
-            var response = new
-            {
-                access_token = encodedJwt,
-                username = email.ToString()
-            };
-
-            return Json(response);
-        }        
+            return Ok(response);
+        }
     }
 }

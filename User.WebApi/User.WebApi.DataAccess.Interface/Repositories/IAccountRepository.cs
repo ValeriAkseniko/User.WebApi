@@ -20,5 +20,7 @@ namespace User.WebApi.User.WebApi.DataAccess.Interface.Repositories
         Task DeleteAsync(Guid accountId);
 
         Task<List<Account>> GetListAsync();
+
+        Task<Account> GetByIdAsync(Guid id);
     }
 }
