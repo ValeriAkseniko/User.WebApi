@@ -30,6 +30,13 @@ namespace User.WebApi.User.WebApi.DataAccess.Repositories
             return await userWebApiContext.Accounts
                 .FirstOrDefaultAsync(x => x.Id == accountId);
         }
+
+        public async Task<Account> GetAsync(string email)
+        {
+            return await userWebApiContext.Accounts
+                .FirstOrDefaultAsync(x => x.Email == email);
+        }
+
         public async Task<bool> EmailExistAsync(string login)
         {
             return await userWebApiContext.Accounts

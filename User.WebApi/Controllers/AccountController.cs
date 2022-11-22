@@ -5,7 +5,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using User.WebApi.User.WebApi.BusinessLogicServices;
+using User.WebApi.User.WebApi.BusinessLogicInterface;
 using User.WebApi.User.WebApi.DataTransferObjects.Account;
 using User.WebApi.User.WebApi.Entities;
 
@@ -13,9 +13,9 @@ namespace User.WebApi.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly AccountService accountService;
+        private readonly IAccountService accountService;
 
-        public AccountController(AccountService accountService)
+        public AccountController(IAccountService accountService)
         {
             this.accountService = accountService;
         }
@@ -74,12 +74,10 @@ namespace User.WebApi.Controllers
             var response = new
             {
                 access_token = encodedJwt,
-                username = identity.ToString()
+                username = email.ToString()
             };
 
             return Json(response);
-        }
-
-        
+        }        
     }
 }

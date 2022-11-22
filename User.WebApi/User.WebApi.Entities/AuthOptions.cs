@@ -5,10 +5,10 @@ namespace User.WebApi.User.WebApi.Entities
 {
     public class AuthOptions
     {
-        public const string ISSUER = "MyWebApi"; // издатель токена
-        public const string AUDIENCE = "AuthClient"; // потребитель токена
-        const string KEY = "mysupersecret_secretkey!123";   // ключ для шифрации
-        public const int LIFETIME = 1; // время жизни токена - 1 минута
+        public const string ISSUER = "MyWebApi";
+        public const string AUDIENCE = "AuthClient";
+        const string KEY = "mysupersecret_secretkey!123";
+        public const int LIFETIME = 10;
         public static SymmetricSecurityKey GetSymmetricSecurityKey()
         {
             return new SymmetricSecurityKey(Encoding.ASCII.GetBytes(KEY));

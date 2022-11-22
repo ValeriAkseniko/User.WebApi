@@ -13,6 +13,8 @@ namespace User.WebApi.User.WebApi.DataAccess.Interface.Repositories
 
         Task<Account> GetAsync(Guid accountId);
 
+        Task<Account> GetAsync(string email);
+
         Task UpdateAsync(Account account);
 
         Task DeleteAsync(Guid accountId);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using User.WebApi.User.WebApi.BusinessLogicInterface;
@@ -40,20 +41,21 @@ namespace User.WebApi.User.WebApi.BusinessLogicServices
         }
         public async Task UpdateAccountAsync(AccountUpdateRequest accountUpdateRequest)
         {
-            //var user = httpContextAccessor.HttpContext.User;
-            var userId = new Guid(httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var account = await accountRepository.GetAsync(userId);
-            account.Name = accountUpdateRequest.Name;
-            account.Surname = accountUpdateRequest.Surname;
-            account.PhoneNumber = accountUpdateRequest.PhoneNumber;
-            account.Email = accountUpdateRequest.Email;
-            await accountRepository.UpdateAsync(account);
+            var user = httpContextAccessor.HttpContext.User.Identity.Name;
+            //var userId = new Guid(httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var entity = await accountRepository.GetAsync(user);
+            entity.Name = accountUpdateRequest.Name;
+            entity.Surname = accountUpdateRequest.Surname;
+            entity.PhoneNumber = accountUpdateRequest.PhoneNumber;
+            entity.Email = accountUpdateRequest.Email;
+            await accountRepository.UpdateAsync(entity);
         }
 
         public async Task<AccountView> GetAsync()
         {
-            var accountId = new Guid(httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var entity = await accountRepository.GetAsync(accountId);
+            var user = httpContextAccessor.HttpContext.User.Identity.Name;
+            //var userId = new Guid(httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var entity = await accountRepository.GetAsync(user);
             var result = new AccountView()
             {
                 Name = entity.Name,

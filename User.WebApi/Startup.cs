@@ -34,6 +34,8 @@ namespace User.WebApi
 
             services.AddScoped<IAccountService, AccountService>();
 
+            services.AddHttpContextAccessor();
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>
                     {
@@ -63,8 +65,6 @@ namespace User.WebApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseDeveloperExceptionPage();
-
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
@@ -76,15 +76,6 @@ namespace User.WebApi
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
-            });
-
-            app.UseHttpsRedirection();
-
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
             });
         }
     }
